@@ -1,27 +1,27 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const mysql = require('mysql2');
-dotenv.config();
 const app = express();
+const sequelize = require('./config/database');
+dotenv.config();
+app.use(express.json());
 
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER, 
-    password: process.env.DB_PASSWORD, 
-    database: process.env.DB_NAME
-});
+//pa sincronizar la bd
+const admin = require("./models/Admin");
 
-db.connect((err) => {
-    if (err) {
-        console.error('Error al conectar a la base de datos:', err);
-        return;
-    }
-    console.log('Conectado a la base de datos MySQL');
-});
+sequelize.authenticate()
+.then(() => console.log('Conexion con la base de datos Ok'))
+.catch((err) => console.log(err.message));
 
-app.get('/', (req, res) => {
-    res.send('holis');
-});
+//NOTAS:
+//force:true --> elimina las tablas y las actualiza
+//force:false --> no elimina las tablas y las actualiza
+sequelize.sync({force:false})
+.then(() => console.log('Base de datos sincronizada'))
+.catch((err) => console.log(err.message));
+
+//Rutas
+const rutasPartido = require("./Routes/R_Partido")
+app.use("/partido" , rutasPartido);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
