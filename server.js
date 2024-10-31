@@ -21,7 +21,7 @@ sequelize.sync({force:false})
 
 //Rutas
 const rutasPartido = require("./Routes/R_Partido")
-app.use("/partido" , rutasPartido);
+app.use("/api/partido" , rutasPartido);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

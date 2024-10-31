@@ -11,7 +11,15 @@ exports.crearPartido = async (req, res) => {
         return res.status(400).json({ msg: "Error al crear el partido: ", err });
     }
 };
-
+exports.obtenerPorID = async (req, res) => {
+    try {
+        const {idPartido} = req.body;
+        const partidoEncontrado = await Partido.findByPk(idPartido);
+        return res.status(200).json({partidoEncontrado});
+    } catch (error) {
+        
+    }
+}
 //metodo de modificar
 //metodo de eliminar
 //metodo de baja
