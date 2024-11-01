@@ -43,6 +43,7 @@ exports.obtenerPartidosPorEstado = async (req , res) =>{
         return res.status(400).json({ msg: "Error al buscar los partidos por estado"});
     }
 }
+
 //metodo de modificar
 //metodo de eliminar
 //metodo de baja
