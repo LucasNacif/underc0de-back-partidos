@@ -1,33 +1,35 @@
-// SDK de Mercado Pago
 const { Preference, MercadoPagoConfig, Payment } = require('mercadopago');
 require('dotenv').config();
 
 // Agrega credenciales
-const client = new MercadoPagoConfig({ accessToken: process.env.ACCESS_TOKEN });
+const client = new MercadoPagoConfig({accessToken: process.env.ACCESS_TOKEN, options: { timeout: 5000 }});
+const preference = new Preference(client);
 
 exports.createPreference = async (req, res) => {
     try {
-        const body = {
-            items: [{
-                title: req.body.title,
-                quantity: Number(req.body.quantity),
-                unit_price: Number(req.body.price),
-                currency_id: 'ARS',
-            },
-            ],
-            back_urls: {
-                success: 'https://a1b8-181-209-77-205.ngrok-free.app/api/success',
-                failure: 'https://a1b8-181-209-77-205.ngrok-free.app/api/failure',
-                pending: 'https://a1b8-181-209-77-205.ngrok-free.app/api/pending',
-            },
-            auto_return: 'approved',
-            // notification_url: "https://a1b8-181-209-77-205.ngrok-free.app ",
-            //la notifiacion se puede poner aca o directamente en la integracion de MP/developers
+        const result = await preference.create({
+            body: {
+                items: [
+                    {
+                        title: req.body.title,
+                        quantity: Number(req.body.quantity),
+                        unit_price: Number(req.body.price),
+                        currency_id: 'ARS',
+                    }
+                ],
+                back_urls: {
+                    success: process.env.URL_NGROK + '/api/success',
+                    failure: process.env.URL_NGROK + '/api/failure',
+                    pending: process.env.URL_NGROK + '/api/pending',
+                },
+                auto_return: 'approved',
 
-        }
-        const preference = new Preference(client);
-        const result = await preference.create({ body })
-        console.log(" preferencia: \n", result)
+   
+            }
+        })
+        console.log("Preference: \n", result);
+        console.log("sandbox_init_point: \n", result.sandbox_init_point);
+        console.log("init_point: \n", result.init_point);
         return res.json({
             id: result.id,
         })
@@ -38,25 +40,58 @@ exports.createPreference = async (req, res) => {
     }
 };
 
-// // Webhook para capturar los detalles del pago
+
 exports.recibirWebhook = async (req, res) => {
+    //Siempre devolver 200 para que mp no siga enviando la noti
     try {
-        console.log("__Detalles del pago: ",req.body)
-        return res.status(204).send();
+        const paymentId = req.body.data.id;
+        console.log("Informacion recibida en el webhook: ", req.body)
+        if (req.body.type === 'payment') {
+            console.log("Tipo Payment")
+            const paymentInfo = await new Payment(client).get({ id: paymentId });
+            console.log('Información del pago:', paymentInfo);
+
+            if (paymentInfo.status === 'approved') {
+                console.log("El pago ha sido aprobado");
+                //aqui hay que traer los datos del que esta pagando  y crear un jugador
+                //tambien inscribir al jugador
+                //verificar si el jugador no esta inscripto ya, porque mp puede mandar varios webhook y el 
+                //jugador se va a inscribir mas de una vez
+                return res.status(200).json({ success: true });
+            }
+            return res.status(200).json({ success: true });
+        }
+        return res.status(200).json({ success: true });
     } catch (error) {
-        console.error("Error al procesar el webhook:", error);
-        return res.status(500).send('Error al procesar el webhook');
+        console.error('Error:', error);
+        return res.status(200).json({ success: false });
     }
 };
 
-exports.recibirBackUrl = (req, res) => {
-    console.log("__Detalles del back url: ",req.query);
-    if (req.query.status == "approved") {
-        res.send("pago aprobado");
-        //inscribir a jugador
-    } else if (req.query.status == "pending") {
-        res.send("pago pending");
-    } else {
-        res.send("pago no aprobado");
+// Success, failure y pending URLs
+exports.handleSuccess = async (req, res) => {
+    const {
+        payment_id,
+        status,
+        merchant_order_id
+    } = req.query;
+
+    if (status === 'approved') {
+        // Redirigir a tu frontend con éxito
+        console.log("pago aprobado")
+        return res.send("pago aprobado");
     }
-}
+};
+
+exports.handleFailure = async (req, res) => {
+    // Redirigir a tu frontend con fallo
+    console.log("falló el pago")
+    return res.send("falló el pago");
+};
+
+exports.handlePending = async (req, res) => {
+    // Redirigir a tu frontend con pendiente
+    console.log("El pago esta pedendiente")
+    return res.send("El pago esta pedendiente");
+};
+

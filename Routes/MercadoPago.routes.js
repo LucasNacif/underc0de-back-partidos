@@ -5,9 +5,10 @@ const controller = require("../Controllers/C_MercadoPago");
 router.post('/create_preference', controller.createPreference);
 
 router.post('/webhook', controller.recibirWebhook);
-router.get('/success', controller.recibirBackUrl);
-router.get('/failure', controller.recibirBackUrl);
-router.get('/pending', controller.recibirBackUrl);
+
+router.get('/success', controller.handleSuccess);
+router.get('/failure', controller.handleFailure);
+router.get('/pending', controller.handlePending);
 
 
 module.exports = router;
