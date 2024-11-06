@@ -6,7 +6,11 @@ const Admin = require("../models/Admin");
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  console.log(email, password);
+  if (!email || !password) {
+    return res
+      .status(400)
+      .send({ message: "Todos los campos son neccesarios" });
+  }
   try {
     const admin = await Admin.findOne({ where: { email: email } });
     console.log(admin);
@@ -27,6 +31,10 @@ exports.login = async (req, res) => {
   }
 };
 exports.logout = (req, res) => {
-  res.cookie("token", "", { expires: new Date(0) });
-  return res.status(200).send({ message: "Sesion cerrada" });
+  try {
+    res.cookie("token", "", { expires: new Date(0) });
+    return res.status(200).send({ message: "Sesion cerrada" });
+  } catch (error) {
+    return res.status(500).send({ error: error });
+  }
 };

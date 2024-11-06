@@ -24,20 +24,20 @@ exports.register = async (req, res) => {
       telefono,
       sadmin,
     });
-    res.status(200).json(newAdmin);
+    return res.status(201).json(newAdmin);
   } catch (error) {
-    res.status(500).json({ error: "internal error", success: false });
+    return res.status(500).json({ error: "internal error", success: false });
   }
 };
 exports.obtenerTodosLosAdmin = async (req, res) => {
   try {
     const adminRegistrados = await Admin.findAll();
-    res.status(200).json(adminRegistrados);
+    return res.status(200).json(adminRegistrados);
   } catch (error) {
     if (error instanceof Error) {
-      res.status(400).json({ msg: error.message, success: false });
+      return res.status(400).json({ msg: error.message, success: false });
     } else {
-      res.status(500).json({ error: "internal error", success: false });
+      return res.status(500).json({ error: "internal error", success: false });
     }
   }
 };
@@ -47,7 +47,7 @@ exports.obtenerAdminPorId = async (req, res) => {
     const idAdmin = req.params.id;
 
     const admin = await Admin.findByPk(idAdmin);
-    res.status(200).json(admin);
+    return res.status(200).json(admin);
   } catch (error) {
     if (error instanceof Error) {
       res.status(400).json({ msg: error.message, success: false });
