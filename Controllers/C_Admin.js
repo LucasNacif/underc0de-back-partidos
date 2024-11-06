@@ -8,13 +8,13 @@ exports.register = async (req, res) => {
     const isAdminExist = await Admin.findOne({ where: { email: email } });
 
     if (isAdminExist) {
-      res.status(400).json({
+      return res.status(400).json({
         msg: "Ya existe un admin con este correo: " + email,
         success: false,
       });
     }
     password = await bcrypt.hash(password, 8);
-    const newAdmin = await Admin.create({
+    await Admin.create({
       nombre,
       apellido,
       email,
@@ -24,7 +24,7 @@ exports.register = async (req, res) => {
       telefono,
       sadmin,
     });
-    return res.status(201).json(newAdmin);
+    return res.status(201).send("Registrado exitosamente");
   } catch (error) {
     return res.status(500).json({ error: "internal error", success: false });
   }
@@ -46,7 +46,23 @@ exports.obtenerAdminPorId = async (req, res) => {
   try {
     const idAdmin = req.params.id;
 
+    // verificar que venga el id
+    if (!idAdmin) {
+      return res.status(400).json({
+        success: false,
+        message: "El ID es requerido en los parametros",
+      });
+    }
+
+    // Verificar si el admin existe
     const admin = await Admin.findByPk(idAdmin);
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: `No se encontró un administrador con el ID: ${idAdmin}`,
+      });
+    }
     return res.status(200).json(admin);
   } catch (error) {
     if (error instanceof Error) {
@@ -77,10 +93,7 @@ exports.eliminarAdmin = async (req, res) => {
       },
     });
 
-    return res.status(200).json({
-      success: true,
-      message: "Administrador eliminado exitosamente",
-    });
+    return res.status(200).send("Administrador eliminado exitosamente");
   } catch (error) {
     if (error instanceof Error) {
       return res.status(400).json({
@@ -98,7 +111,7 @@ exports.eliminarAdmin = async (req, res) => {
 exports.editarAdmin = async (req, res) => {
   try {
     const idAdmin = req.params.id;
-    const { nombre, apellido, email, alias, cvu, telefono } = req.body;
+    const { nombre, apellido, email, alias, cvu, telefono, sadmin } = req.body;
 
     // verificar que venga el id
     if (!idAdmin) {
@@ -159,6 +172,7 @@ exports.editarAdmin = async (req, res) => {
     if (alias) camposActualizar.alias = alias;
     if (cvu) camposActualizar.cvu = cvu;
     if (telefono) camposActualizar.telefono = telefono;
+    if (sadmin) camposActualizar.sadmin = sadmin;
 
     // Actualizar el admin
     await Admin.update(camposActualizar, {
