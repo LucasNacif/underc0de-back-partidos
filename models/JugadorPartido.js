@@ -6,7 +6,7 @@ const Partido = require('./Partido');
 const JugadorPartido = sequelize.define('JugadorPartido', {
     idJugador: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
+        allowNull: false,
         references: {
             model: Jugador,
             key: 'idJugador'
@@ -14,7 +14,7 @@ const JugadorPartido = sequelize.define('JugadorPartido', {
     },
     idPartido: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
+        allowNull: false,
         references: {
             model: Partido,
             key: 'idPartido'

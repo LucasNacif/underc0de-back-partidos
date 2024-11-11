@@ -36,6 +36,10 @@ app.use("/api", rutasMP);
 const rutasPartido = require("./Routes/Partido.routes.js");
 app.use("/api/partido", rutasPartido);
 
+// Rutas para JugadorPartido
+const rutasJugadorPartido = require("./Routes/JugadorPartido.routes.js");
+app.use("/api/jugadorPartido", rutasJugadorPartido);
+
 const rutasAuth = require("./Routes/Auth.routes.js");
 app.use("/api/auth", rutasAuth);
 const rutasAdmin = require("./Routes/Admin.routes.js");
