@@ -25,7 +25,7 @@ sequelize
 //force:true --> elimina las tablas y las actualiza
 //force:false --> no elimina las tablas y las actualiza
 sequelize
-  .sync({ force: false })
+  .sync({ force: true })
   .then(() => console.log("Base de datos sincronizada"))
   .catch((err) => console.log(err.message));
 
@@ -35,6 +35,10 @@ app.use("/api", rutasMP);
 
 const rutasPartido = require("./Routes/Partido.routes.js");
 app.use("/api/partido", rutasPartido);
+
+// Rutas para JugadorPartido
+const rutasJugadorPartido = require("./Routes/JugadorPartido.routes.js");
+app.use("/api/jugadorPartido", rutasJugadorPartido);
 
 const rutasAuth = require("./Routes/Auth.routes.js");
 app.use("/api/auth", rutasAuth);
