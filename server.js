@@ -25,7 +25,7 @@ sequelize
 //force:true --> elimina las tablas y las actualiza
 //force:false --> no elimina las tablas y las actualiza
 sequelize
-  .sync({ force: false })
+  .sync({ force: true })
   .then(() => console.log("Base de datos sincronizada"))
   .catch((err) => console.log(err.message));
 
