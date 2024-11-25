@@ -6,7 +6,6 @@ require('dotenv').config();
 
 // Agrega credenciales
 const client = new MercadoPagoConfig({ accessToken: process.env.ACCESS_TOKEN, options: { timeout: 5000 } });
-const client = new MercadoPagoConfig({ accessToken: process.env.ACCESS_TOKEN, options: { timeout: 5000 } });
 const preference = new Preference(client);
 
 exports.createPreference = async (req, res) => {
