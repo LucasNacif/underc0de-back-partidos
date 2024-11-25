@@ -6,6 +6,7 @@ require('dotenv').config();
 
 // Agrega credenciales
 const client = new MercadoPagoConfig({ accessToken: process.env.ACCESS_TOKEN, options: { timeout: 5000 } });
+const client = new MercadoPagoConfig({ accessToken: process.env.ACCESS_TOKEN, options: { timeout: 5000 } });
 const preference = new Preference(client);
 
 exports.createPreference = async (req, res) => {
@@ -18,6 +19,10 @@ exports.createPreference = async (req, res) => {
                         quantity: Number(req.body.quantity),
                         unit_price: Number(req.body.price),
                         currency_id: 'ARS',
+                        description_metadata: JSON.stringify({
+                            partidoId: req.body.partidoId,
+                            jugadores: req.body.jugadores
+                        })
                     }
                 ],
                 back_urls: {
@@ -41,8 +46,7 @@ exports.createPreference = async (req, res) => {
         })
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ error: "error con la preferencia" })
-
+        return res.status(500).json({ error: "error con la preferencia" });
     }
 };
 
