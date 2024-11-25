@@ -30,6 +30,7 @@ sequelize
   .catch((err) => console.log(err.message));
 
 //Rutas
+
 const rutasMP = require("./Routes/MercadoPago.routes.js");
 app.use("/api", rutasMP);
 
