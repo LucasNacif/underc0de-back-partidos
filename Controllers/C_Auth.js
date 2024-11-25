@@ -27,7 +27,7 @@ exports.login = async (req, res) => {
       jwtAdmin,
     });
   } catch (error) {
-    return res.status(500).send({ error: error });
+    return res.status(500).send(error);
   }
 };
 exports.logout = (req, res) => {

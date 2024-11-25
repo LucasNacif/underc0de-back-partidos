@@ -45,9 +45,9 @@ exports.obtenerTodosLosAdmin = async (req, res) => {
 exports.obtenerAdminPorId = async (req, res) => {
   try {
     const idAdmin = req.params.id;
-
+    console.log(idAdmin);
     // verificar que venga el id
-    if (!idAdmin) {
+    if (!idAdmin || idAdmin == undefined) {
       return res.status(400).json({
         success: false,
         message: "El ID es requerido en los parametros",
@@ -111,9 +111,7 @@ exports.eliminarAdmin = async (req, res) => {
 exports.editarAdmin = async (req, res) => {
   try {
     const idAdmin = req.params.id;
-    const { nombre, apellido, email, alias, cvu, telefono, sadmin } = req.body;
 
-    // verificar que venga el id
     if (!idAdmin) {
       return res.status(400).json({
         success: false,
@@ -121,85 +119,64 @@ exports.editarAdmin = async (req, res) => {
       });
     }
 
-    // Verificar si el admin existe
-    const adminExiste = await Admin.findByPk(idAdmin);
-
-    if (!adminExiste) {
+    const adminExist = await Admin.findByPk(idAdmin);
+    if (!adminExist) {
       return res.status(404).json({
         success: false,
         message: `No se encontró un administrador con el ID: ${idAdmin}`,
       });
     }
 
-    // Si se está cambiando el email, verificar que no exista ya
-    if (email && email !== adminExiste.email) {
-      const emailExiste = await Admin.findOne({
-        where: { email: email },
-      });
-
-      if (emailExiste) {
-        return res.status(400).json({
-          success: false,
-          message: `Ya existe un administrador con el email: ${email}`,
-        });
-      }
-    }
-
-    // Validar CVU si se está actualizando
-    if (cvu && cvu.length !== 22) {
+    // Validaciones
+    if (req.body.cvu && req.body.cvu.length !== 22) {
       return res.status(400).json({
         success: false,
         message: "El CVU debe tener 22 caracteres",
       });
     }
 
-    // Validar email si se está actualizando
-    if (email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+    if (req.body.email) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.body.email)) {
         return res.status(400).json({
           success: false,
           message: "Formato de email inválido",
         });
       }
+
+      if (req.body.email !== adminExist.email) {
+        const emailExist = await Admin.findOne({
+          where: { email: req.body.email },
+        });
+        if (emailExist) {
+          return res.status(400).json({
+            success: false,
+            message: `Ya existe un administrador con el email: ${req.body.email}`,
+          });
+        }
+      }
     }
 
-    // Crear objeto con campos a actualizar
-    const camposActualizar = {};
-    if (nombre) camposActualizar.nombre = nombre;
-    if (apellido) camposActualizar.apellido = apellido;
-    if (email) camposActualizar.email = email;
-    if (alias) camposActualizar.alias = alias;
-    if (cvu) camposActualizar.cvu = cvu;
-    if (telefono) camposActualizar.telefono = telefono;
-    if (sadmin) camposActualizar.sadmin = sadmin;
-
-    // Actualizar el admin
-    await Admin.update(camposActualizar, {
-      where: {
-        idAdmin: idAdmin,
+    // Actualizar
+    await Admin.update(
+      {
+        ...adminExist.dataValues, // valores actuales
+        ...req.body, // nuevos valores
       },
-    });
+      {
+        where: { idAdmin },
+      }
+    );
 
-    // Obtener el admin actualizado
     const adminActualizado = await Admin.findByPk(idAdmin);
-
     return res.status(200).json({
       success: true,
       message: "Administrador actualizado exitosamente",
       admin: adminActualizado,
     });
   } catch (error) {
-    if (error instanceof Error) {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    } else {
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor",
-      });
-    }
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error interno del servidor",
+    });
   }
 };
