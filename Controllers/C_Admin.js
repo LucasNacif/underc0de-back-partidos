@@ -45,9 +45,9 @@ exports.obtenerTodosLosAdmin = async (req, res) => {
 exports.obtenerAdminPorId = async (req, res) => {
   try {
     const idAdmin = req.params.id;
-
+    console.log(idAdmin);
     // verificar que venga el id
-    if (!idAdmin) {
+    if (!idAdmin || idAdmin == undefined) {
       return res.status(400).json({
         success: false,
         message: "El ID es requerido en los parametros",
