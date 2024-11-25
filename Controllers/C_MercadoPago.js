@@ -1,4 +1,7 @@
 const { Preference, MercadoPagoConfig, Payment } = require('mercadopago');
+const JugadorPartido = require('../models/JugadorPartido');
+const Partido = require('../models/Partido');
+const Jugador = require('../models/Jugador');
 require('dotenv').config();
 
 // Agrega credenciales
@@ -22,17 +25,24 @@ exports.createPreference = async (req, res) => {
                     }
                 ],
                 back_urls: {
-                    success: process.env.URL_NGROK + '/api/success',
-                    failure: process.env.URL_NGROK + '/api/failure',
-                    pending: process.env.URL_NGROK + '/api/pending',
+                    success: process.env.URL_DEPLOY + '/api/success',
+                    failure: process.env.URL_DEPLOY + '/api/failure',
+                    pending: process.env.URL_DEPLOY + '/api/pending',
+                },
+                metadata: {
+                    jugadores: req.body.jugadores,
+                    idPartido: req.body.idPartido,
+
                 },
                 auto_return: 'approved',
             }
-        });
-
-        return res.json({
-            id: result.id,
-        });
+        })
+        console.log("Preference: \n", result);
+        console.log("sandbox_init_point: \n", result.sandbox_init_point);
+        console.log("init_point: \n", result.init_point);
+        return res.status(200).json({
+            url: result.init_point,
+        })
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: "error con la preferencia" });
@@ -45,27 +55,37 @@ exports.recibirWebhook = async (req, res) => {
     try {
         const paymentId = req.body.data.id;
         console.log("Informacion recibida en el webhook: ", req.body)
+
         if (req.body.type === 'payment') {
-            console.log("Tipo Payment")
             const paymentInfo = await new Payment(client).get({ id: paymentId });
             console.log('Información del pago:', paymentInfo);
 
             if (paymentInfo.status === 'approved') {
+
                 console.log("El pago ha sido aprobado");
-                //aqui hay que traer los datos del que esta pagando  y crear un jugador
-                //tambien inscribir al jugador
-                //verificar si el jugador no esta inscripto ya, porque mp puede mandar varios webhook y el 
-                //jugador se va a inscribir mas de una vez
-                return res.status(200).json({ success: true });
+
+                const jugadores = paymentInfo.metadata.jugadores;
+                const idPartido = paymentInfo.metadata.idPartido;
+
+                exports.inscribirJugadores(jugadores, idPartido)
+                    .then((resultado) => console.log("Resultado:", resultado))
+                    .catch((error) => console.error("Error:", error));
+            } else if (paymentInfo.status === 'pending') {
+                console.log("El pago está pendiente");
+            } else if (paymentInfo.status === 'failed') {
+                console.log("El pago ha fallado");
             }
+
+            //aca se puede redirigir a una pagina que te muestre un ok
+        
             return res.status(200).json({ success: true });
         }
-        return res.status(200).json({ success: true });
-    } catch (error) {
-        console.error('Error:', error);
-        return res.status(200).json({ success: false });
-    }
-};
+    }catch (error) {
+    console.error('Error:', error);
+    return res.status(200).json({ success: false });
+}
+}
+
 
 // Success, failure y pending URLs
 exports.handleSuccess = async (req, res) => {
@@ -92,4 +112,64 @@ exports.handlePending = async (req, res) => {
     // Redirigir a tu frontend con pendiente
     console.log("El pago esta pedendiente")
     return res.send("El pago esta pedendiente");
+};
+
+
+exports.inscribirJugador = async (jugadores, idPartido) => {
+    try {
+        const partido = await Partido.findByPk(idPartido);
+        if (!partido) {
+            return res.status(404).json({
+                message: "El partido no existe",
+                status: 404,
+            });
+        }
+        const resultado = [];
+        for (const jugadorData of jugadores) {
+            const { numDoc, nombre, apellido, telefono, asistenciaAfter } = jugadorData;
+
+            const [jugador, created] = await Jugador.findOrCreate({
+                where: { numDoc },
+                defaults: { nombre, apellido, telefono, asistenciaAfter },
+            });
+
+            // Verificar si el jugador ya está inscrito en el partido
+            const yaInscrito = await JugadorPartido.findOne({
+                where: { idJugador: jugador.idJugador, idPartido }
+            });
+            if (yaInscrito) {
+                resultado.push({
+                    jugador: numDoc,
+                    message: "El jugador ya está inscrito en este partido",
+                    status: 400,
+                });
+                continue;
+            }
+            // Crear la relación entre jugador y partido
+            await JugadorPartido.create({
+                idJugador: jugador.idJugador,
+                idPartido
+            });
+
+            resultados.push({
+                jugador: numDoc,
+                message: created
+                    ? "Jugador creado e inscrito exitosamente en el partido"
+                    : "Jugador inscrito exitosamente en el partido",
+                status: 200,
+            });
+
+        }
+        return {
+            message: "Inscripción finalizada",
+            detalles: resultado,
+            status: 200,
+        };
+    } catch (error) {
+        console.error("Error al inscribir jugadores:", error);
+        return {
+            message: "Error interno del servidor",
+            status: 500,
+        };
+    }
 };
