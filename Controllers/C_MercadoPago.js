@@ -60,6 +60,8 @@ exports.recibirWebhook = async (req, res) => {
             if (paymentInfo.status === 'approved') {
                 console.log("El pago ha sido aprobado");
 
+                console.log("metadata: ", paymentInfo.metadata)
+
                 const jugadores = paymentInfo.metadata.jugadores;
                 const idPartido = paymentInfo.metadata.idPartido;
 
@@ -105,6 +107,8 @@ exports.handlePending = async (req, res) => {
 
 
 async function inscribirJugador(jugadores, idPartido) {
+    console.log('ID Partido recibido:', idPartido);
+
     const resultado = [];
     try {
         const partido = await Partido.findByPk(idPartido);
