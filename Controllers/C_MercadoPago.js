@@ -87,14 +87,9 @@ exports.recibirWebhook = async (req, res) => {
 
 // Success, failure y pending URLs
 exports.handleSuccess = async (req, res) => {
-    const {
-        payment_id,
-        status,
-        merchant_order_id
-    } = req.query;
-
+    const {status} = req.query;
     if (status === 'approved') {
-        return res.reder("/listar-partidos");
+        return res.redirect(`${process.env.FRONTEND_URL}/pagoExitoso`);
     }
 };
 
