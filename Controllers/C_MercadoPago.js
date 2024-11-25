@@ -37,9 +37,7 @@ exports.createPreference = async (req, res) => {
                 auto_return: 'approved',
             }
         })
-        console.log("Preference: \n", result);
-        console.log("sandbox_init_point: \n", result.sandbox_init_point);
-        console.log("init_point: \n", result.init_point);
+    
         return res.status(200).json({
             url: result.init_point,
         })
@@ -47,6 +45,7 @@ exports.createPreference = async (req, res) => {
         console.log(error);
         return res.status(500).json({ error: "error con la preferencia" });
     }
+
 };
 
 
@@ -54,22 +53,21 @@ exports.recibirWebhook = async (req, res) => {
     //Siempre devolver 200 para que mp no siga enviando la noti
     try {
         const paymentId = req.body.data.id;
-        console.log("Informacion recibida en el webhook: ", req.body)
-
+      
         if (req.body.type === 'payment') {
             const paymentInfo = await new Payment(client).get({ id: paymentId });
+            
             console.log('Información del pago:', paymentInfo);
 
             if (paymentInfo.status === 'approved') {
-
                 console.log("El pago ha sido aprobado");
 
                 const jugadores = paymentInfo.metadata.jugadores;
                 const idPartido = paymentInfo.metadata.idPartido;
 
-                exports.inscribirJugadores(jugadores, idPartido)
-                    .then((resultado) => console.log("Resultado:", resultado))
-                    .catch((error) => console.error("Error:", error));
+                const resultado = await inscribirJugador(jugadores, idPartido)
+                console.log("Resultado de inscripción:", resultado);
+
             } else if (paymentInfo.status === 'pending') {
                 console.log("El pago está pendiente");
             } else if (paymentInfo.status === 'failed') {
@@ -96,9 +94,7 @@ exports.handleSuccess = async (req, res) => {
     } = req.query;
 
     if (status === 'approved') {
-        // Redirigir a tu frontend con éxito
-        console.log("pago aprobado")
-        return res.send("pago aprobado");
+        return res.redirect("/listar-partidos");
     }
 };
 
@@ -115,7 +111,7 @@ exports.handlePending = async (req, res) => {
 };
 
 
-exports.inscribirJugador = async (jugadores, idPartido) => {
+async function inscribirJugador(jugadores, idPartido) {
     try {
         const partido = await Partido.findByPk(idPartido);
         if (!partido) {
