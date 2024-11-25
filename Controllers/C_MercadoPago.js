@@ -94,7 +94,7 @@ exports.handleSuccess = async (req, res) => {
     } = req.query;
 
     if (status === 'approved') {
-        return res.redirect("/listar-partidos");
+        return res.reder("/listar-partidos");
     }
 };
 
@@ -115,10 +115,11 @@ async function inscribirJugador(jugadores, idPartido) {
     try {
         const partido = await Partido.findByPk(idPartido);
         if (!partido) {
-            return res.status(404).json({
+            return {
                 message: "El partido no existe",
+                detalles: resultado,
                 status: 404,
-            });
+            };
         }
         const resultado = [];
         for (const jugadorData of jugadores) {
