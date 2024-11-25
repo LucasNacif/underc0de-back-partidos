@@ -56,8 +56,6 @@ exports.recibirWebhook = async (req, res) => {
       
         if (req.body.type === 'payment') {
             const paymentInfo = await new Payment(client).get({ id: paymentId });
-            
-            console.log('Información del pago:', paymentInfo);
 
             if (paymentInfo.status === 'approved') {
                 console.log("El pago ha sido aprobado");
@@ -89,7 +87,7 @@ exports.recibirWebhook = async (req, res) => {
 exports.handleSuccess = async (req, res) => {
     const {status} = req.query;
     if (status === 'approved') {
-        return res.redirect(`${process.env.FRONTEND_URL}/pagoExitoso`);
+        return res.redirect(`${process.env.FRONTEND_URL}/listar-partidos`);
     }
 };
 
