@@ -107,16 +107,15 @@ exports.handlePending = async (req, res) => {
 
 
 async function inscribirJugador(jugadores, idPartido) {
+    const resultado = [];
     try {
         const partido = await Partido.findByPk(idPartido);
         if (!partido) {
             return {
                 message: "El partido no existe",
-                detalles: resultado,
                 status: 404,
             };
         }
-        const resultado = [];
         for (const jugadorData of jugadores) {
             const { numDoc, nombre, apellido, telefono, asistenciaAfter } = jugadorData;
 
