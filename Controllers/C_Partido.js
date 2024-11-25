@@ -1,6 +1,7 @@
 const Partido = require("../models/Partido");
 
 exports.crearPartido = async (req, res) => {
+
   try {
     const PartidoParaCrear = ({
       fecha,
@@ -17,8 +18,19 @@ exports.crearPartido = async (req, res) => {
   } catch (err) {
     return res.status(400).json({ msg: "Error al crear el partido: ", err });
   }
+
 };
+exports.eliminarPartido = async (req, res) => {
+    try {
+        const idPartido = req.params.id;
+        await Partido.destroy({ where: { idPartido: idPartido } });
+        return res.status(200).json({ msg: "Partido eliminado existosamente" });
+    } catch (err) {
+        return res.status(400).json({ msg: "Error al eliminar el partido: ", err });
+    }
+}
 exports.obtenerPorID = async (req, res) => {
+
   try {
     const { idPartido } = req.body;
     const partidoEncontrado = await Partido.findByPk(idPartido);
@@ -105,6 +117,7 @@ exports.editarPartido = async (req, res) => {
         success: false,
         message: `No se encontró un partido con el ID: ${id}`,
       });
+
     }
     //creo un nuevo objeto mezclando los datos del partido obtenido de la db y los que manda el front a actualizar
 
