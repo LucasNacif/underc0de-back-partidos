@@ -10,5 +10,6 @@ router.get("/obtener/:estado", controller.obtenerPartidosPorEstado);
 router.get("/eliminar/:id", controller.eliminarPartido);
 router.get("/cancelar/:id", controller.cancelarPartido);
 
+
 module.exports = router;
 

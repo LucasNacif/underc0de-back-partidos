@@ -21,13 +21,13 @@ exports.crearPartido = async (req, res) => {
 
 };
 exports.eliminarPartido = async (req, res) => {
-    try {
-        const idPartido = req.params.id;
-        await Partido.destroy({ where: { idPartido: idPartido } });
-        return res.status(200).json({ msg: "Partido eliminado existosamente" });
-    } catch (err) {
-        return res.status(400).json({ msg: "Error al eliminar el partido: ", err });
-    }
+  try {
+    const idPartido = req.params.id;
+    await Partido.destroy({ where: { idPartido: idPartido } });
+    return res.status(200).json({ msg: "Partido eliminado existosamente" });
+  } catch (err) {
+    return res.status(400).json({ msg: "Error al eliminar el partido: ", err });
+  }
 }
 exports.obtenerPorID = async (req, res) => {
 
@@ -171,4 +171,3 @@ exports.cancelarPartido = async (req, res) => {
   }
 };
 
-//metodo de baja

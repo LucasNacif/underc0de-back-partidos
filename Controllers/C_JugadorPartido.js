@@ -31,27 +31,86 @@ exports.eliminarJugadorDePartido = async (req, res) => {
 exports.obtenerJugadoresDePartido = async (req, res) => {
     const { idPartido } = req.params;
 
-    if (!idPartido) {
-        return res.status(400).json({ error: "Se requiere el ID del partido" });
-    }
+  try {
+    const partido = await Partido.findByPk(idPartido, {
+      include: [
+        {
+          model: Jugador,
+          attributes: ["idJugador", "numDoc", "nombre", "apellido", "telefono", "asistenciaAfter"],
+          through: { attributes: [] }, 
+        },
+      ],
+    });
 
-    try {
-        // Consulta para obtener los jugadores de un partido
-        const jugadores = await Jugador.findAll({
-            include: [{
-                model: JugadorPartido,
-                where: { idPartido: idPartido }
-            }]
-        });
-
-        if (jugadores.length > 0) {
-            return res.json({ jugadores });
-        } else {
-            return res.status(404).json({ error: "No se encontraron jugadores para este partido" });
-        }
-    } catch (error) {
-        console.error("Error al obtener jugadores de partido:", error);
-        return res.status(500).json({ error: "Error en el servidor" });
+    if (!partido) {
+      return res.status(404).json({ message: "Partido no encontrado" });
     }
+    return res.status(200).json({
+      message: "Jugadores obtenidos exitosamente",
+      jugadores: partido.Jugadors,  
+    });
+
+  } catch (error) {
+    console.error("Error al obtener jugadores:", error.message);
+    return res.status(500).json({ message: "Error al obtener jugadores" });
+  }
 };
 
+
+
+exports.inscribirJugador = async (req, res) => {
+    try {
+        const { idPartido, numDoc, nombre, apellido, asistenciaAfter = false, telefono } = req.body;
+
+        if (!idPartido || !numDoc || !nombre || !apellido) {
+            return res.status(400).json({
+                message: "Los campos idPartido, numDoc, nombre y apellido son obligatorios",
+                status: 400,
+            });
+        }
+
+        const partido = await Partido.findByPk(idPartido);
+        if (!partido) {
+            return res.status(404).json({
+                message: "El partido no existe",
+                status: 404,
+            });
+        }
+
+        const [jugador, created] = await Jugador.findOrCreate({
+            where: { numDoc },
+            defaults: { nombre, apellido, telefono, asistenciaAfter }
+        });
+
+        // Verificar si el jugador ya está inscrito en el partido
+        const yaInscrito = await JugadorPartido.findOne({
+            where: { idJugador: jugador.idJugador, idPartido }
+        });
+
+        if (yaInscrito) {
+            return res.status(400).json({
+                message: "El jugador ya está inscrito en este partido",
+                status: 400,
+            });
+        }
+
+        // Crear la relación entre jugador y partido
+        await JugadorPartido.create({
+            idJugador: jugador.idJugador,
+            idPartido
+        });
+
+        return res.status(200).json({
+            message: created
+                ? "Jugador creado e inscrito exitosamente en el partido"
+                : "Jugador inscrito exitosamente en el partido",
+            status: 200,
+        });
+    } catch (error) {
+        console.error("Error al inscribir jugador:", error);
+        return res.status(500).json({
+            message: "Error interno del servidor",
+            status: 500,
+        });
+    }
+};
