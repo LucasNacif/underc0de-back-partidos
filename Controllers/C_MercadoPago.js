@@ -137,7 +137,6 @@ async function inscribirJugador(jugadores, idPartido) {
             });
             if (yaInscrito) {
                 resultado.push({
-                    jugador: numDoc,
                     message: "El jugador ya está inscrito en este partido",
                     status: 400,
                 });
@@ -150,7 +149,6 @@ async function inscribirJugador(jugadores, idPartido) {
             });
 
             resultado.push({
-                jugador: numDoc,
                 message: created
                     ? "Jugador creado e inscrito exitosamente en el partido"
                     : "Jugador inscrito exitosamente en el partido",
