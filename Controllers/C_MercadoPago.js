@@ -149,7 +149,7 @@ async function inscribirJugador(jugadores, idPartido) {
                 idPartido
             });
 
-            resultados.push({
+            resultado.push({
                 jugador: numDoc,
                 message: created
                     ? "Jugador creado e inscrito exitosamente en el partido"
