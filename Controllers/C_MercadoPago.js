@@ -73,8 +73,6 @@ exports.recibirWebhook = async (req, res) => {
             } else if (paymentInfo.status === 'failed') {
                 console.log("El pago ha fallado");
             }
-
-            //aca se puede redirigir a una pagina que te muestre un ok
         
             return res.status(200).json({ success: true });
         }

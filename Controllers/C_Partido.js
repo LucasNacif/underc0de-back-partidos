@@ -53,6 +53,7 @@ exports.obtenerPartidosPorEstado = async (req, res) => {
 
     // Validacion de estados permitidos
     const estadosPermitidos = ["activo", "cancelado", "reprogramado"];
+
     if (!estadosPermitidos.includes(estado)) {
       return res.status(400).json({ error: "Estado inválido" });
     }
@@ -63,41 +64,6 @@ exports.obtenerPartidosPorEstado = async (req, res) => {
     return res
       .status(400)
       .json({ msg: "Error al buscar los partidos por estado" });
-  }
-};
-
-exports.eliminarPartido = async (req, res) => {
-  try {
-    const idMatch = req.params.id;
-
-    const match = await Partido.findByPk(idMatch);
-
-    if (!match) {
-      return res.status(404).json({
-        success: false,
-        message: `No existe el partido con id: ${idMatch}`,
-      });
-    }
-
-    await Partido.destroy({
-      where: {
-        idPartido: idMatch,
-      },
-    });
-
-    return res.status(200).send("Partido eliminado exitosamente");
-  } catch (error) {
-    if (error instanceof Error) {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    } else {
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor",
-      });
-    }
   }
 };
 exports.editarPartido = async (req, res) => {
@@ -127,7 +93,7 @@ exports.editarPartido = async (req, res) => {
         ...req.body,
       },
       {
-        where: { id },
+        where: { idPartido: id },
       }
     );
 
@@ -144,30 +110,5 @@ exports.editarPartido = async (req, res) => {
     });
   }
 };
-exports.cancelarPartido = async (req, res) => {
-  try {
-    const id = req.params.id;
-    if (!id) {
-      return res.status(400).json({
-        success: false,
-        message: "El ID es requerido en los parametros",
-      });
-    }
-    await Partido.update(
-      { estado: "cancelado" },
-      {
-        where: { id: 1 },
-      }
-    );
-    return res.status(200).json({
-      success: true,
-      message: "Partido cancelado",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Error interno del servidor",
-    });
-  }
-};
+
 
