@@ -49,7 +49,7 @@ exports.obtenerPartido = async (req, res) => {
 };
 exports.obtenerPartidosPorEstado = async (req, res) => {
   try {
-    const estado = req.params.estado;
+    const { estado, ordenamiento } = req.query;
 
     // Validacion de estados permitidos
     const estadosPermitidos = ["activo", "cancelado", "reprogramado"];
@@ -57,13 +57,36 @@ exports.obtenerPartidosPorEstado = async (req, res) => {
     if (!estadosPermitidos.includes(estado)) {
       return res.status(400).json({ error: "Estado inválido" });
     }
-    const partidos = await Partido.findAll({ where: { estado } });
+
+    // Configurar el orden de los resultados
+    let order = [['fecha', 'ASC']]; // Default sorting
+
+    switch (ordenamiento) {
+      case 'fecha_desc':
+        order = [['fecha', 'DESC']];
+        break;
+      case 'precio_asc':
+        order = [['precio', 'ASC']];
+        break;
+      case 'precio_desc':
+        order = [['precio', 'DESC']];
+        break;
+      default:
+        // Default is fecha_asc
+        break;
+    }
+
+    const partidos = await Partido.findAll({ 
+      where: { estado },
+      order: order
+    });
 
     res.json({ Partidos: partidos });
   } catch (error) {
+    console.error('Error al buscar los partidos:', error);
     return res
-      .status(400)
-      .json({ msg: "Error al buscar los partidos por estado" });
+      .status(500)
+      .json({ msg: "Error al buscar los partidos por estado", error: error.message });
   }
 };
 exports.editarPartido = async (req, res) => {
