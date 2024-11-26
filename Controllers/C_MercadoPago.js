@@ -31,7 +31,7 @@ exports.createPreference = async (req, res) => {
                 },
                 metadata: {
                     jugadores: req.body.jugadores,
-                    idPartido: req.body.idPartido,
+                    id_partido: req.body.idPartido,
 
                 },
                 auto_return: 'approved',
@@ -63,7 +63,7 @@ exports.recibirWebhook = async (req, res) => {
                 console.log("metadata: ", paymentInfo.metadata)
 
                 const jugadores = paymentInfo.metadata.jugadores;
-                const idPartido = paymentInfo.metadata.idPartido;
+                const idPartido = paymentInfo.metadata.id_partido;
 
                 const resultado = await inscribirJugador(jugadores, idPartido)
                 console.log("Resultado de inscripción:", resultado);
