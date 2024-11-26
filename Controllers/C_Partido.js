@@ -127,7 +127,7 @@ exports.editarPartido = async (req, res) => {
         ...req.body,
       },
       {
-        where: { id },
+        where: { idPartido: id },
       }
     );
 
@@ -156,7 +156,7 @@ exports.cancelarPartido = async (req, res) => {
     await Partido.update(
       { estado: "cancelado" },
       {
-        where: { id: 1 },
+        where: { idPartido:id },
       }
     );
     return res.status(200).json({
