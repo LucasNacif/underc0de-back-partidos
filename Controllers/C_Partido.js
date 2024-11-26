@@ -47,6 +47,7 @@ exports.obtenerPartido = async (req, res) => {
     return res.status(400).json({ msg: "Error al buscar los partidos: " });
   }
 };
+
 exports.obtenerPartidosPorEstado = async (req, res) => {
   try {
     const { estado, ordenamiento } = req.query;
@@ -55,7 +56,10 @@ exports.obtenerPartidosPorEstado = async (req, res) => {
     const estadosPermitidos = ["activo", "cancelado", "reprogramado"];
 
     if (!estadosPermitidos.includes(estado)) {
-      return res.status(400).json({ error: "Estado inválido" });
+      return res.status(400).json({ 
+        error: "Estado inválido", 
+        partidos: [] 
+      });
     }
 
     // Configurar el orden de los resultados
@@ -81,14 +85,22 @@ exports.obtenerPartidosPorEstado = async (req, res) => {
       order: order
     });
 
-    res.json({ Partidos: partidos });
+    // Ensure consistent response structure
+    res.json({ 
+      partidos: partidos,
+      total: partidos.length,
+      estado: estado
+    });
   } catch (error) {
     console.error('Error al buscar los partidos:', error);
-    return res
-      .status(500)
-      .json({ msg: "Error al buscar los partidos por estado", error: error.message });
+    return res.status(500).json({ 
+      error: "Error al buscar los partidos por estado", 
+      msg: error.message,
+      partidos: [] 
+    });
   }
 };
+
 exports.editarPartido = async (req, res) => {
   try {
     const id = req.params.id;
