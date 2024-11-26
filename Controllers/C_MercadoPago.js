@@ -127,8 +127,8 @@ async function inscribirJugador(jugadores, idPartido) {
             }
 
             const [jugador, created] = await Jugador.findOrCreate({
-                where: { num_doc },
-                defaults: { nombre, apellido, telefono, asistencia_after },
+                where: { numDoc:num_doc },
+                defaults: { nombre, apellido, telefono, asistenciaAfter:asistencia_after },
             });
 
             // Verificar si el jugador ya está inscrito en el partido
