@@ -119,11 +119,16 @@ async function inscribirJugador(jugadores, idPartido) {
             };
         }
         for (const jugadorData of jugadores) {
-            const { numDoc, nombre, apellido, telefono, asistenciaAfter } = jugadorData;
+            const { num_doc, nombre, apellido, telefono, asistencia_after } = jugadorData;
+
+            if (!num_doc || !nombre || !apellido || !telefono) {
+                console.log("Faltan datos del jugador:", jugadorData);
+                continue;
+            }
 
             const [jugador, created] = await Jugador.findOrCreate({
-                where: { numDoc },
-                defaults: { nombre, apellido, telefono, asistenciaAfter },
+                where: { num_doc },
+                defaults: { nombre, apellido, telefono, asistencia_after },
             });
 
             // Verificar si el jugador ya está inscrito en el partido
